@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Upscaler</title>
+    <link rel="icon" href="logo.png" type="image/jpeg" style="border-radius: 16px;">
+    <style>
+        body {
+            padding: 20px;
+            background: linear-gradient(to right, hsl(0, 28%, 46%),#f1f5f5, #3498db, #5F9EA0, #814e56);
+            /* Blue to Purple gradient */
+            color: white;
+            /* Set text color to white for better visibility */
+        }
+
+        #spinner-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .blinking-text {
+            animation: blink 1s infinite;
+        }
+    </style>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container my-5">
+        <h1 class="mb-4 my-5" style="color: rgb(16, 15, 15); text-align: center; font-size: 60px;">
+            <img src="logo.png" style="height: 20%; width: 10%;"/>
+            <b>AI Image Upscaler</b>
+        </h1>
+    </div>
+
+    <section class="container my-5">
+        <div class="container mt-5" id="firstdiv">
+            <form id="imageUpscaleForm">
+                <div class="row my-5 ">
+                    <div class="col-lg-3"></div>
+                    <div class="col-lg-6 ">
+                        <div class="mb-3 my-5 ">
+                            <input type="file" class="form-control mx-0"
+                                style="background-color: rgb(186, 230, 230); width: 100%; " id="imageInput"
+                                accept=".jpg, .jpeg, .png" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3"></div>
+                    <div class="col-lg-6" style="display:flex; justify-content: center;">
+                        <div class="mb-3 ">
+                            <!-- onclick="submitForm()" -->
+                            <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </form>
+
+            <div id="result" class="mt-4"></div>
+        </div>
+
+        <div class="container my-5" id="seconddiv" style="display: none;">
+            <div class="text-center">
+                <img src="" class="rounded" id="outimg" style="height: 350px; width: 250px;" alt="...">
+            </div>
+            <div class="row my-3">
+                <div class="col-lg-3"></div>
+                <div class="col-lg-6 " style="display:flex; justify-content: center;">
+                    <div class="mb-3 ">
+                        <button type="button" class="btn btn-primary mx-2" onclick="downloadImage()">Download</button>
+                        <button type="button" class="btn btn-primary" onclick="toggleDivs()">Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- spinner -->
+    <div id="spinner-container">
+        <div class="spinner"></div>
+        <div class="blinking-text my-3">It may take 1-2 Min</div>
+    </div>
+
+    <section class="container my-5" style="color:black;">
+        <div class="container">
+            <h1 style="text-align: center;">About AI Image Upscaler</h1>
+
+            <p>Welcome to AI Image Upscaler, your go-to tool for enhancing the quality of your images using advanced AI technology. Our mission is to provide a user-friendly and efficient solution for improving image resolution and overall visual appeal.</p>
+
+            <p>How it works:</p>
+            <ol>
+                <li>Upload your image using the provided form.</li>
+                <li>Our AI algorithms analyze the image and enhance its resolution.</li>
+                <li>Download the upscaled image and enjoy the improved quality.</li>
+            </ol>
+
+            <p>Our Features:</p>
+            <ul>
+                <li>Fast and efficient image upscaling.</li>
+                <li>Support for various image formats, including JPG, JPEG, and PNG.</li>
+                <li>Customizable options for adjusting image style and noise cancellation.</li>
+                <li>User-friendly interface for a seamless experience.</li>
+            </ul>
+
+            <img src="demo.jpg" alt="AI Image Upscaler Demo" style="width:80%; height:80%;">
+
+            <p>Feel free to explore and experience the power of AI in image enhancement. If you have any questions or feedback, <a href="contact.html">contact us</a>.</p>
+
+            <p>Thank you for choosing AI Image Upscaler!</p>
+        </div>
+    </section>
+
+     <!-- footer -->
+     <div style="text-align: center; color: #15181a;">
+        <!-- After the first div and before the second div -->
+        <hr class="my-5 mx-5" style="border: 1px solid #112a3a;">
+        <p class="mb-1">© 2024 AI Image Upscaler. All rights reserved.</p>
+        <p class="mb-0">New AI Image Upscaler. Developed by Vinod Kumawat .
+        </p>
+    </div>
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // async function submitForm() {
+        //     showSpinner();
+        //     const url = 'https://ai-picture-upscaler.p.rapidapi.com/supersize-image';
+        //     const data = new FormData();
+        //     const imageInput = document.getElementById('imageInput');
+        //     data.append('image', imageInput.files[0]);
+        //     data.append('sizeFactor', 2);
+        //     data.append('imageStyle', "default");
+        //     data.append('noiseCancellationFactor', 0);
+
+        //     const options = {
+        //         method: 'POST',
+        //         headers: {
+        //             'X-RapidAPI-Key': '1c8e69b71bmsh91d8dd8ce5ffd6fp1fc3c9jsnb9837f306ee2',
+        //             'X-RapidAPI-Host': 'ai-picture-upscaler.p.rapidapi.com'
+        //         },
+        //         body: data
+        //     };
+
+        //     try {
+        //         const response = await fetch(url, options);
+        //         const blob = await response.blob();
+
+        //         // Create an object URL for the blob and set it as the source of the image
+        //         const imageURL = URL.createObjectURL(blob);
+        //         // const imageElement = document.createElement('img');
+        //         // imageElement.src = imageURL;
+        //         document.getElementById('outimg').src= imageURL;
+
+        //         // Display the image
+        //         document.getElementById('result').innerHTML = '';
+        //         document.getElementById('result').appendChild(imageElement);
+        //         hideSpinner();
+        //         toggleDivs();
+        //     } catch (error) {
+        //         // hideSpinner();
+        //         // alert("An error occured try again!!!")
+        //         console.error(error);
+        //     }
+        // }
+
+        async function submitForm() {
+            showSpinner();
+            const url = 'https://ai-picture-upscaler.p.rapidapi.com/supersize-image';
+            const data = new FormData();
+            const imageInput = document.getElementById('imageInput');
+            
+            if(imageInput.value == "")
+            {
+                alert("Select an image");
+                hideSpinner();
+                return;
+            }
+            data.append('image', imageInput.files[0]);
+            data.append('sizeFactor', 2);
+            data.append('imageStyle', "default");
+            data.append('noiseCancellationFactor', 0);
+
+            const options = {
+                method: 'POST',
+                headers: {
+                    'X-RapidAPI-Key': '1c8e69b71bmsh91d8dd8ce5ffd6fp1fc3c9jsnb9837f306ee2',
+                    'X-RapidAPI-Host': 'ai-picture-upscaler.p.rapidapi.com'
+                },
+                body: data
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const blob = await response.blob();
+
+                // Create an object URL for the blob and set it as the source of the image
+                const imageURL = URL.createObjectURL(blob);
+
+                // Use 'outimg' directly instead of creating a new image element
+                document.getElementById('outimg').src = imageURL;
+
+                // Display the image
+                document.getElementById('result').innerHTML = '';
+                hideSpinner();
+                toggleDivs();
+            } catch (error) {
+                hideSpinner();
+                alert("An error occurred, try again!!!");
+                console.error(error);
+            }
+        }
+
+        function downloadImage() {
+            const imageURL = document.getElementById('outimg').src;
+            const link = document.createElement('a');
+            link.href = imageURL;
+            link.download = 'downloaded_image.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function toggleDivs() {
+            var firstDiv = document.getElementById('firstdiv');
+            var secondDiv = document.getElementById('seconddiv');
+
+            if (firstDiv.style.display !== 'none') {
+                firstDiv.style.display = 'none';
+                secondDiv.style.display = 'block';
+            } else {
+                firstDiv.style.display = 'block';
+                secondDiv.style.display = 'none';
+            }
+        }
+
+        //Function to show the spinner
+        function showSpinner() {
+            document.getElementById('spinner-container').style.display = 'flex';
+        }
+
+        // Function to hide the spinner
+        function hideSpinner() {
+            document.getElementById('spinner-container').style.display = 'none';
+        }
+    </script>
+
+</body>
+
+</html>
